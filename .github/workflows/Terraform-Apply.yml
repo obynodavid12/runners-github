@@ -13,7 +13,7 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
     env:
-      RUNNER_CFG_PAT: ${{ secrets.RUNNER_CFG_PAT }} 
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
    
     # Checkout the repository to the GitHub Actions runner
@@ -69,17 +69,67 @@ jobs:
         name: terraform-output
         path: |
            tfoutput.json
-           scripts/
+           "./"
       
 
-    - name: Terraform destroy
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      id: destroy
-      run: terraform destroy -auto-approve
- 
+    # - name: Terraform destroy
+    #   if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    #   id: destroy
+    #   run: terraform destroy -auto-approve
+  build:
+    name: 'docker-image'
+    runs-on: ubuntu-latest
+    env:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+        
+   
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        echo "Pushing image to ECR..."
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" 
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'aws_account_id.dkr.ecr.region.amazonaws.com/imageName:${{ github.sha }}'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+      env:
+        AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-2
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-results.sarif'    
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: workspace
+        path: ${{ github.workspace }}/tmp     
 
   Deploy:
-    needs: terraform
+    needs: [terraform, build ]
     runs-on: ubuntu-latest
          
     steps:
@@ -94,7 +144,7 @@ jobs:
         value=`cat tfoutput.json`
         echo The result is $value
         echo "INSTANCE_IP=`jq -r '.private_ip.value' tfoutput.json`" >> $GITHUB_ENV
-        #echo "BASTION_INSTANCE_IP=`jq -r '.public_ip' tfoutput.json`" >> $GITHUB_ENV
+        
         
     
     - name: copy file via ssh key
@@ -108,8 +158,8 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "scripts"
-        target: "scripts"          
+        source: "."
+        target: "."          
             
     
     - name: executing remote ssh commands
@@ -123,15 +173,7 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         command_timeout: 30m
         script: |
-          cd scripts/
-          find ./ -name "*.sh" -execdir chmod u+x {} +
-          sudo yum update -y
-          wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-          chmod +x ./jq
-          sudo mv jq /usr/bin
-          export RUNNER_CFG_PAT=${{ secrets.RUNNER_CFG_PAT }} 
-          ./createsvc.sh obynodavid12/Instances
-#          #curl -s https://raw.githubusercontent.com/actions/runner/main/scripts/create-latest-svc.sh | bash -s obynodavid12/Instances -n selfhosted         
           
           
+          docker pull aws_account_id.dkr.ecr.region.amazonaws.com/hello-world:latest
       
