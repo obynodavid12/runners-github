@@ -28,7 +28,7 @@ else
 
     echo "Requesting token at '${token_url}'"
 
-    payload=$(curl -sX POST -H "Authorization: token ${GITHUB_PAT}" ${token_url})
+    payload=$(curl -sX POST -H "Authorization: token ${PERSONAL_ACCESS_TOKEN}" ${token_url})
     export RUNNER_TOKEN=$(echo $payload | jq .token --raw-output)
 
 fi
@@ -50,7 +50,7 @@ remove() {
     if [ -n "${GITHUB_TOKEN}" ]; then
         export REMOVE_TOKEN=$GITHUB_TOKEN
     else
-        payload=$(curl -sX POST -H "Authorization: token ${GITHUB_PAT}" ${token_url%/registration-token}/remove-token)
+        payload=$(curl -sX POST -H "Authorization: token ${PERSONAL_ACCESS_TOKEN}" ${token_url%/registration-token}/remove-token)
         export REMOVE_TOKEN=$(echo $payload | jq .token --raw-output)
     fi
 

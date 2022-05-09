@@ -10,7 +10,7 @@ variable "region" {
   type        = string
 }
 
-variable "runner_cfg_pat" {
+variable "personal_access_token" {
   default = ""
 
 }
