@@ -114,13 +114,19 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" 
     
- 
+    - name: Save Docker Log
+      run: docker log -json > dockerlog.json
+      shell: bash
 
-    - name: Upload Build Artifact
+    - name: Upload output file
       uses: actions/upload-artifact@v2
       with:
         name: docker-log
-        path: ${{ github.workspace }}/tmp    
+        path: |
+           dockerlog.json
+           ${{ github.workspace }}/tmp
+
+       
 
   Deploy:
     needs: [terraform, build ]
@@ -132,7 +138,7 @@ jobs:
       with:
         name: terraform-output
 
-    - name: Download Build Artifact
+    - name: Download docker log file
       uses: actions/upload-artifact@v2
       with:
         name: docker-log
@@ -145,20 +151,6 @@ jobs:
         echo The result is $value
         echo "INSTANCE_IP=`jq -r '.private_ip.value' tfoutput.json`" >> $GITHUB_ENV
     
-    - name: copy file via ssh key
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ env.INSTANCE_IP }}
-        username: ${{ secrets.AWS_EC2_USERNAME }}
-        key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-        proxy_host: ${{ secrets.AWS_PROXY_HOST }}
-        proxy_username: ${{ secrets.AWS_EC2_USERNAME }}
-        proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
-        rm: true
-        strip_components: 1
-        source: "./"
-        target: "./"             
-        
     
     - name: copy file via ssh key
       uses: appleboy/scp-action@master
