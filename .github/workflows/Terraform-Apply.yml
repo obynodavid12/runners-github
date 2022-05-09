@@ -115,7 +115,7 @@ jobs:
         echo "::set-output name=image::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" 
     
     - name: Save Docker Log
-      run: docker log -json > dockerlog.json
+      run: docker events > dockerevents.json
       shell: bash
 
     - name: Upload output file
@@ -123,7 +123,7 @@ jobs:
       with:
         name: docker-log
         path: |
-           dockerlog.json
+           dockerevents.json
            ${{ github.workspace }}/tmp
 
        
