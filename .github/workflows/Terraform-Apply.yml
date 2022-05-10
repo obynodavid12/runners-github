@@ -73,7 +73,7 @@ jobs:
         name: terraform-output
         path: |
            tfoutput.json
-           "runners-github/script/*"
+           "script/*"
       
 
     # - name: Terraform destroy
@@ -125,6 +125,7 @@ jobs:
       run:
         working-directory: "."     
     steps:
+   
     - name: Download terraform output file
       uses: actions/download-artifact@v2
       with:
@@ -150,8 +151,8 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "runners-github/script/*"
-        target: "runners-github/script/*"          
+        source: "script/*"
+        target: "${{ secrets.TARGET_DIR }}"        
             
     
     - name: executing remote ssh commands
