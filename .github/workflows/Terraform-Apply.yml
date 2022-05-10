@@ -116,7 +116,6 @@ jobs:
     
   
 
-
   Deploy:
     needs: [terraform, build ]
     runs-on: ubuntu-latest
@@ -139,7 +138,7 @@ jobs:
     - name: copy file via ssh key
       uses: appleboy/scp-action@master
       with:
-        host: ${{ env.INSTANCE_IP }}
+        host: ${{ secrets.INSTANCE_IP }}
         username: ${{ secrets.AWS_EC2_USERNAME }}
         key: ${{ secrets.AWS_EC2_PRIVATE_KEY }} 
         proxy_host: ${{ secrets.AWS_PROXY_HOST }}
@@ -147,14 +146,14 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "script/bootstrap.sh"
-        target: "script/bootstrap.sh"          
+        source: "script"
+        target: "script"          
             
     
     - name: executing remote ssh commands
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ env.INSTANCE_IP }}
+        host: ${{ secrets.INSTANCE_IP }}
         username: ${{ secrets.AWS_EC2_USERNAME }}
         key: ${{ secrets.AWS_EC2_PRIVATE_KEY }} 
         proxy_host: ${{ secrets.AWS_PROXY_HOST }}
@@ -162,7 +161,7 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         command_timeout: 30m
         script: |
-            cd script
+            cd script/
             find ./ -name "*.sh" -execdir chmod u+x {} +  
             ./bootstrap.sh
             docker login --username AWS --password-stdin $ECR_REGISTRY
