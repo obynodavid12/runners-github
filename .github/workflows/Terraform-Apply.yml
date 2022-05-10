@@ -152,8 +152,8 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "runners-github/script/*"
-        target: "runners-github/script/*"          
+        source: "script/*"
+        target: "script/*"          
             
     
     - name: executing remote ssh commands
@@ -167,7 +167,7 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         command_timeout: 30m
         script: |
-            cd script/*
+            cd script/
             find ./ -name "*.sh" -execdir chmod u+x {} +  
             ./bootstrap.sh
             docker login --username AWS --password-stdin $ECR_REGISTRY
