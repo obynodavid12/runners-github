@@ -71,7 +71,7 @@ jobs:
         name: terraform-output
         path: |
            tfoutput.json
-           "runners-github/script/bootstrap.sh"
+           "runners-github/script/*"
       
 
     # - name: Terraform destroy
@@ -146,8 +146,8 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "runners-github/script/bootstrap.sh"
-        target: "runners-github/script/bootstrap.sh"          
+        source: "runners-github/script/*"
+        target: "runners-github/script/*"          
             
     
     - name: executing remote ssh commands
@@ -161,7 +161,7 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         command_timeout: 30m
         script: |
-            cd runners-github/script/*
+            cd script/*
             find ./ -name "*.sh" -execdir chmod u+x {} +  
             ./bootstrap.sh
             docker login --username AWS --password-stdin $ECR_REGISTRY
