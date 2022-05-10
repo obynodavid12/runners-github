@@ -142,6 +142,8 @@ jobs:
     
     - name: copy file via ssh key
       uses: appleboy/scp-action@master
+      env:
+       host: ${{ secrets.INSTANCE_IP }}
       with:
         host: ${{ secrets.INSTANCE_IP }}
         username: ${{ secrets.AWS_EC2_USERNAME }}
