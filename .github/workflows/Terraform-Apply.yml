@@ -17,9 +17,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: $ {{ secrets.AWS_REGION }}
-    defaults:
-      run:
-        working-directory: "." 
+     
     # Checkout the repository to the GitHub Actions runner
     steps:
     - name: Checkout
@@ -85,9 +83,7 @@ jobs:
   build:
     name: 'docker-image'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "." 
+    
     
     steps:
     - name: Checkout
@@ -123,9 +119,7 @@ jobs:
   Deploy:
     needs: [terraform, build ]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "."     
+         
     steps:
     - name: Download terraform output file
       uses: actions/download-artifact@v2
@@ -172,5 +166,5 @@ jobs:
             ./bootstrap.sh
             docker login --username AWS --password-stdin $ECR_REGISTRY
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            docker run --name github-runner -e GITHUB_OWNER=obynodavid12 -e GITHUB_REPOSITORY=runners-github -e PERSONAL_ACCESS_TOKEN=${{ secret.PERSONAL_ACCESS_TOKEN }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker run --name github-runner -e GITHUB_OWNER=obynodavid12 -e GITHUB_REPOSITORY=runners-github -e PERSONAL_ACCESS_TOKEN={{ secret.PERSONAL_ACCESS_TOKEN }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       
