@@ -151,8 +151,8 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "script/*"
-        target: "${{ secrets.TARGET_DIR }}"        
+        source: "runners-github/script/*"
+        target: "${{ secrets.TARGET_DIR }}"
             
     
     - name: executing remote ssh commands
