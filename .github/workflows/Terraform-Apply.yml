@@ -73,7 +73,7 @@ jobs:
         name: terraform-output
         path: |
            tfoutput.json
-           "runners-github/script/*"
+           "script/"
       
 
     # - name: Terraform destroy
@@ -152,8 +152,8 @@ jobs:
         proxy_key: ${{ secrets.AWS_EC2_PROXY_PRIVATE_KEY }}
         rm: true
         strip_components: 1
-        source: "script/*"
-        target: "script/*"          
+        source: "script"
+        target: "script"          
             
     
     - name: executing remote ssh commands
