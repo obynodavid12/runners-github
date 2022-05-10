@@ -166,5 +166,5 @@ jobs:
             ./bootstrap.sh
             docker login --username AWS --password-stdin $ECR_REGISTRY
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            docker run --name github-runner -e GITHUB_OWNER=obynodavid12 -e GITHUB_REPOSITORY=runners-github -e PERSONAL_ACCESS_TOKEN={{ secret.PERSONAL_ACCESS_TOKEN }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker run --name github-runner -e GITHUB_OWNER=obynodavid12 -e GITHUB_REPOSITORY=runners-github -e PERSONAL_ACCESS_TOKEN=${{ secret.PERSONAL_ACCESS_TOKEN }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       
